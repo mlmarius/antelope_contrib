@@ -1,16 +1,25 @@
+from __future__ import print_function
 import os
 import sys
+import logging
 
 sys.path.append(os.environ['ANTELOPE'] + "/data/python")
 
 usage = "\n\t\tevent2qml [-h] [-v] [-d] [-p pfname] [-s XSD_schema] " \
         "database [EVID] \n"
 
-version = '1.0'
+version = '1.1'
 
 description = """
+GA adapted QuakeML export infrastructure for Antelope
+---------------------------------------------------------------------------
+The original quakeml export was adapted to work with GA's infrastructure.
 
-QuakeML export infrastructure for Antelope
+Sudipta Basak
+basaks@gmail.com
+---------------------------------------------------------------------------
+
+Original QuakeML export infrastructure for Antelope
 ---------------------------------------------------------------------------
 This code attempts to convert 1 (or more) seismic event(s) and all
 other associated information from an Antelope Datascope database
@@ -43,7 +52,6 @@ XML parser:
 """
 
 from optparse import OptionParser
-import inspect
 
 try:
     import antelope.stock as stock
@@ -67,10 +75,10 @@ except Exception, e:
     validation = False
 
 MODE = 'w'
+log = logging.getLogger(__name__)
 
 
-def event_xml(event_id, event, quakeml, output_file, log):
-
+def event_xml(event_id, event, quakeml, output_file):
     # Get event information from Antelope
     log.info('Load information for event:[%s]' % event_id)
     event.get_event(event_id)
@@ -82,20 +90,21 @@ def event_xml(event_id, event, quakeml, output_file, log):
     results = xmlencode(quakeml.dump())
     if output_file:
         try:
-            log.notify('Write results to file [%s] mode:%s' % (
+            log.info('Write results to file [%s] mode:%s' % (
                 output_file, MODE))
+
             ofile = open(output_file, MODE)
             ofile.write(results)
+
             ofile.close()
         except Exception, e:
             log.error('Problems writing to file [%s]=>%s' % (
                 output_file, e))
-
     else:
         # Output to log if needed.
         log.debug('Print Event in QuakeML format')
         # This will go to STDOUT.
-        print results
+        print(results)
 
     if validation:
         log.debug('Try to validate the results:')
@@ -127,10 +136,10 @@ def event_xml(event_id, event, quakeml, output_file, log):
         else:
             log.warning('Missing schema file: %s' % schema_file)
 
-        log.notify('VALID QuakeML-1.2 ? => %s' % valid)
+        log.info('VALID QuakeML-1.2 ? => %s' % valid)
 
 
-def setup_event2qml(options):
+def setup_event2qml(options, database):
     """
     Parameters
     ----------
@@ -143,25 +152,11 @@ def setup_event2qml(options):
     logging: logging.getLogger object     
     
     """
-    # Set log level
-    loglevel = 'WARNING'
-    if options.debug:
-        loglevel = 'DEBUG'
-    elif options.verbose:
-        loglevel = 'INFO'
 
-    # New logger object and set loglevel
-    logging = getLogger(loglevel=loglevel)
-    # Parse arguments from command-line
-    database = args[0]
-    logging.info(' '.join(sys.argv))
-    logging.info(parser.get_version())
-    logging.info('loglevel=%s' % loglevel)
-    logging.info("database [%s]" % database)
-    logging.info("evid [%s]" % evid)
+    log.info("database [%s]" % database)
     # Pull values from ParameterFile
     options.pf = stock.pffiles(options.pf)[-1]
-    logging.info("Parameter file to use [%s]" % options.pf)
+    log.info("Parameter file to use [%s]" % options.pf)
     pf_object = open_verify_pf(options.pf, 1472083200)
     uri_prefix = safe_pf_get(pf_object, 'uri_prefix', 'quakeml')
     agency_uri = safe_pf_get(pf_object, 'agency_uri', 'local')
@@ -222,7 +217,7 @@ def setup_event2qml(options):
     detection_state_reject = filter(
         None, safe_pf_get(pf_object, 'detection_state_reject', []))
     # New event object
-    logging.info('Init Event()')
+    log.info('Init Event()')
     ev = Event(database=database,
                magnitude_type_subset=magnitude_type_subset,
                event_auth_select=event_auth_select,
@@ -241,7 +236,7 @@ def setup_event2qml(options):
                fplane_auth_reject=fplane_auth_reject)
     # This is the primary object for the conversion. Initialize and
     # configure for all events that we want to process.
-    logging.info('Init QuakeML object')
+    log.info('Init QuakeML object')
     qml = css2qml(review_flags=review_flags, etype_map=etype_map,
                   uri_prefix=uri_prefix, agency_uri=agency_uri,
                   agency_id=agency_id, author=author,
@@ -255,7 +250,7 @@ def setup_event2qml(options):
                   add_mt=add_mt, add_stamag=add_stamag,
                   add_arrival=add_arrival)
 
-    return ev, qml, logging
+    return ev, qml
 
 
 if __name__ == '__main__':
@@ -297,16 +292,23 @@ if __name__ == '__main__':
     (main_options, args) = parser.parse_args()
 
     # If we don't have 2 arguments then exit.
-    if len(args) < 1 or len(args) > 2:
+    if len(args) != 2:
         parser.print_help()
         parser.error("incorrect number of arguments")
 
-    if len(args) > 1:
-        evid = int(args[1])
-    else:
-        evid = False
+    evid = int(args[1])
 
-    ev, qml, logging = setup_event2qml(main_options)
+    # Set log level
+    log_level = 'WARNING'
+    if main_options.debug:
+        log_level = 'DEBUG'
+    elif main_options.verbose:
+        log_level = 'INFO'
 
-    if evid:
-        event_xml(evid, ev, qml, main_options.output_file, logging)
+    logging.info("Beging processing")
+    log.setLevel(level=log_level)
+    log.info(parser.get_version())
+    log.info('loglevel=%s' % log_level)
+
+    ev, qml = setup_event2qml(main_options, database=args[0])
+    event_xml(evid, ev, qml, main_options.output_file)
