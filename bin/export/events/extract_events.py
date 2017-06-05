@@ -12,6 +12,7 @@ import logging
 from optparse import OptionParser
 from ga_event2qml import event_xml, setup_event2qml, version
 
+logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
 description = """
@@ -56,10 +57,8 @@ def extract_all_events(ev, qml, db_path, output_dir):
     with ds.closing(ds.dbopen(db_path, 'r')) as db:
         with ds.freeing(db.process(['dbopen event', 'dbsort evid'])) as view:
             for row in view.iter_record():
-                log.info('Processing ' + ' '.join([str(row.getv(x)[0]) for x in
-                         EVENT_FIELDS]))
-                print('Processing ' + ' '.join([str(row.getv(x)[0]) for x in
-                         EVENT_FIELDS]))
+                log.info('Processing event' +
+                         ' '.join([str(row.getv(x)[0]) for x in EVENT_FIELDS]))
                 event_id = row.getv(EVENT_FIELDS[0])[0]
                 event_xml(event_id=event_id,
                           event=ev,
@@ -107,7 +106,6 @@ if __name__ == '__main__':
     elif options.verbose:
         loglevel = 'INFO'
 
-    logging.info('Begin processing events')
     log.info(parser.get_version())
     log.setLevel(level=loglevel)
     log.info('loglevel=%s' % loglevel)

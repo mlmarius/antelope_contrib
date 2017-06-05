@@ -305,7 +305,7 @@ if __name__ == '__main__':
     elif main_options.verbose:
         log_level = 'INFO'
 
-    logging.info("Beging processing")
+    logging.basicConfig(level=logging.INFO)
     log.setLevel(level=log_level)
     log.info(parser.get_version())
     log.info('loglevel=%s' % log_level)
