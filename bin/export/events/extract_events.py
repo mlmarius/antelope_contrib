@@ -88,10 +88,6 @@ if __name__ == '__main__':
     parser.add_option("-p", action="store", dest="pf",
                       default='event2qml.pf', help="parameter file to use")
 
-    # Output file
-    parser.add_option("-o", action="store", dest="output_file",
-                      default=False, help="Output xml dir")
-
     (options, args) = parser.parse_args()
 
     # If we don't have 2 arguments then exit.
