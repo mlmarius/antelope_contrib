@@ -137,6 +137,8 @@ def event_xml(event_id, event, quakeml, output_file):
             log.warning('Missing schema file: %s' % schema_file)
 
         log.info('VALID QuakeML-1.2 ? => %s' % valid)
+    else:
+        log.debug('Output QuakeMl not validated.')
 
 
 def setup_event2qml(options, database):

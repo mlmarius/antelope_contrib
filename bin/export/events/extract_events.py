@@ -11,6 +11,7 @@ import csv
 import logging
 from optparse import OptionParser
 from ga_event2qml import event_xml, setup_event2qml, version
+from obspy.core.event import read_events
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
@@ -53,17 +54,22 @@ def extract_event(db_path, ev_file):
                                      EVENT_FIELDS])
 
 
-def extract_all_events(ev, qml, db_path, output_dir):
+def extract_all_events(ev, qml, db_path, output_dir, sc3xml):
+
     with ds.closing(ds.dbopen(db_path, 'r')) as db:
         with ds.freeing(db.process(['dbopen event', 'dbsort evid'])) as view:
-            for row in view.iter_record():
-                log.info('Processing event' +
+            for i, row in enumerate(view.iter_record()):
+                log.info('Processing event #{}: '.format(i+1) +
                          ' '.join([str(row.getv(x)[0]) for x in EVENT_FIELDS]))
                 event_id = row.getv(EVENT_FIELDS[0])[0]
+                event_qml = os.path.join(output_dir, str(event_id) + '.qml')
                 event_xml(event_id=event_id,
                           event=ev,
                           quakeml=qml,
-                          output_file=os.path.join(output_dir, str(event_id)))
+                          output_file=event_qml)
+    catalog = read_events(pathname_or_url=os.path.join(output_dir, '*.qml'),
+                          format='QUAKEML')
+    catalog.write(filename=sc3xml, format='SC3ML')
 
 
 if __name__ == '__main__':
@@ -83,6 +89,10 @@ if __name__ == '__main__':
     # Debug output
     parser.add_option("-d", action="store_true", dest="debug",
                       default=False, help="run with debug output")
+
+    # Output seiscomp3 XML file
+    parser.add_option("-o", action="store", dest="output_file",
+                      default=False, help="Output seiscomp3 xml file")
 
     # Parameter File
     parser.add_option("-p", action="store", dest="pf",
@@ -111,7 +121,7 @@ if __name__ == '__main__':
     DB_PATH = os.path.abspath(args[0])
     assert os.path.exists(DB_PATH), 'provide correct path to db dir.'
 
-    outdir_arg = args[1] if len(args) > 1 else 'outdir'
+    outdir_arg = 'outdir'
 
     outdir = os.path.join(os.getcwd(), outdir_arg)
 
@@ -120,5 +130,6 @@ if __name__ == '__main__':
     else:
         parser.error("Specified output dir '{}' exists.\n"
                      "Remove output dir and try again.".format(outdir_arg))
-
-    extract_all_events(ev, qml, DB_PATH, output_dir=outdir)
+    print(options.output_file, ',,,,,,,,,,,,=====')
+    extract_all_events(ev, qml, DB_PATH, output_dir=outdir,
+                       sc3xml=options.output_file)
