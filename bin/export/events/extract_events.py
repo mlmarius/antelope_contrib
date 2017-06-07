@@ -59,20 +59,23 @@ def extract_all_events(ev, qml, db_path, output_dir, sc3xml):
     with ds.closing(ds.dbopen(db_path, 'r')) as db:
         with ds.freeing(db.process(['dbopen event', 'dbsort evid'])) as view:
             for i, row in enumerate(view.iter_record()):
-                log.info('Processing event #{}: '.format(i+1) +
-                         ' '.join([str(row.getv(x)[0]) for x in EVENT_FIELDS]))
-                event_id = row.getv(EVENT_FIELDS[0])[0]
-                event_qml = os.path.join(output_dir, str(event_id) + '.xml')
-
-                event_xml(event_id=event_id,
-                          event=ev,
-                          quakeml=qml,
-                          output_file=event_qml)
+                _process_event(i, row, ev, qml, output_dir)
 
     catalog = read_events(pathname_or_url=os.path.join(output_dir, '*.xml'),
                           format='QUAKEML')
 
     catalog.write(filename=sc3xml, format='SC3ML')
+
+
+def _process_event(i, row, ev, qml, output_dir):
+    log.info('Processing event #{}: '.format(i + 1) +
+             ' '.join([str(row.getv(x)[0]) for x in EVENT_FIELDS]))
+    event_id = row.getv(EVENT_FIELDS[0])[0]
+    event_qml = os.path.join(output_dir, str(event_id) + '.xml')
+    event_xml(event_id=event_id,
+              event=ev,
+              quakeml=qml,
+              output_file=event_qml)
 
 
 if __name__ == '__main__':
