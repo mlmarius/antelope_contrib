@@ -857,11 +857,10 @@ class css2qml():
 
         '''
 
-        uri = '%s:%s' % (self.uri_prefix, self.agency_uri )
+        uri = '%s' % self.agency_uri
 
         if auth:
             uri += '/%s' % auth
-
         return uri
 
     def _id( self, name, serial=None, alt_id=None ):
@@ -908,6 +907,7 @@ class css2qml():
 
         if alt_id:
             rid += '/%s' % alt_id
+        print(rid, '========================<<<<<<<<<<<<<<<<<<<<< rid')
 
         return rid
 
