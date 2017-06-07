@@ -907,8 +907,6 @@ class css2qml():
 
         if alt_id:
             rid += '/%s' % alt_id
-        print(rid, '========================<<<<<<<<<<<<<<<<<<<<< rid')
-
         return rid
 
 

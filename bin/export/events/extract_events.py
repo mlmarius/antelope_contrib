@@ -62,13 +62,16 @@ def extract_all_events(ev, qml, db_path, output_dir, sc3xml):
                 log.info('Processing event #{}: '.format(i+1) +
                          ' '.join([str(row.getv(x)[0]) for x in EVENT_FIELDS]))
                 event_id = row.getv(EVENT_FIELDS[0])[0]
-                event_qml = os.path.join(output_dir, str(event_id) + '.qml')
+                event_qml = os.path.join(output_dir, str(event_id) + '.xml')
+
                 event_xml(event_id=event_id,
                           event=ev,
                           quakeml=qml,
                           output_file=event_qml)
-    catalog = read_events(pathname_or_url=os.path.join(output_dir, '*.qml'),
+
+    catalog = read_events(pathname_or_url=os.path.join(output_dir, '*.xml'),
                           format='QUAKEML')
+
     catalog.write(filename=sc3xml, format='SC3ML')
 
 
@@ -130,6 +133,5 @@ if __name__ == '__main__':
     else:
         parser.error("Specified output dir '{}' exists.\n"
                      "Remove output dir and try again.".format(outdir_arg))
-    print(options.output_file, ',,,,,,,,,,,,=====')
     extract_all_events(ev, qml, DB_PATH, output_dir=outdir,
                        sc3xml=options.output_file)

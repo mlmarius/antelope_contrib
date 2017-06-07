@@ -14,9 +14,9 @@ uri_prefix quakeml
 # For the description of resources which are not
 # officially controlled by an authority, local
 # identifiers can be assigned using the keyword “local” as agency_uri.
-agency_uri  local               # ie anf.ucsd.edu
+agency_uri  ga.gov.au             # ie anf.ucsd.edu
 
-agency_id  xx                   # ie TA
+agency_id  GA                   # ie TA
 
 author  Antelope event2qml process # ie Array Network Facility, UCSD
 
