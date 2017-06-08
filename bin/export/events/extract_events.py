@@ -10,6 +10,7 @@ import sys
 import csv
 import subprocess
 import logging
+import glob
 from optparse import OptionParser
 from ga_event2qml import version
 from obspy.core.event import read_events
@@ -36,8 +37,8 @@ EVENT_FIELDS = ['evid', 'prefor', 'auth']
 DEFAULT_EVENT_FILE = 'events.csv'
 
 usage = "\n\t\tevent2qml [-h] [-v] [-d] [-p pfname] [-s XSD_schema] " \
-            "database [OUT_DIR] \n"
-
+            "database \n"
+SPLIT_BY = 100  # these many events in out output SC3Ml xml
 
 def _extract_events(db_path, ev_file):
     """
@@ -80,10 +81,31 @@ def _extract_all_events(cmd, output_dir, ev_file):
 
 def _convert_to_sc3xml(output_dir, sc3xml):
     # read in all the QuakeML files into a catalogue object
-    catalog = read_events(pathname_or_url=os.path.join(output_dir, '*.xml'),
-                          format='QUAKEML')
-    # now write out seiscomp3ML
-    catalog.write(filename=sc3xml, format='SC3ML')
+    qmls = glob.glob(os.path.join(output_dir, '*.xml'))
+
+    sc3xml = os.path.splitext(sc3xml)
+
+    for i, qml in enumerate(qmls):
+        if not i % SPLIT_BY:
+            catalog = read_events(pathname_or_url=qmls[i], format='QUAKEML')
+        log.info('Added QuakeML #{}: {}'.format(i+2, qml))
+        catalog.extend(read_events(pathname_or_url=qml,
+                                   format='QUAKEML').events)
+
+        # now write out seiscomp3ML
+        if not (i + 1) % SPLIT_BY:
+            catalog.write(
+                filename=sc3xml[0] +
+                         '_{}'.format((i+1) // SPLIT_BY) + sc3xml[1],
+                format='SC3ML'
+            )
+
+    if (i + 1) % SPLIT_BY:
+        catalog.write(
+            filename=sc3xml[0] +
+                    '_{}'.format((i + 1) // SPLIT_BY + 1) + sc3xml[1],
+            format='SC3ML'
+        )
 
 
 if __name__ == '__main__':
