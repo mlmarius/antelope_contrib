@@ -192,7 +192,6 @@ class Event():
                 self.logging.debug( 'Extracting info for event from db' )
 
                 self.event_data = get_all_fields( temp, nulls )
-                self.logging.info(self.event_data)
                 self.valid = True
 
 
@@ -229,6 +228,10 @@ class Event():
 
         steps = ['dbopen origin']
         steps.extend([ 'dbsubset evid == %s' % self.evid ])
+
+        if self.prefor is True:
+            orid = self.event_data['event.prefor']
+            steps.extend([ 'dbsubset orid == %s' % orid ])
 
         [ steps.extend( [ 'dbsubset auth =~ /%s/' % x ] ) for x in self.origin_auth_select if self.origin_auth_select]
         [ steps.extend( [ 'dbsubset auth !~ /%s/' % x ] ) for x in self.origin_auth_reject if self.origin_auth_reject]
