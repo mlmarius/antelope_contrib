@@ -252,7 +252,8 @@ def setup_event2qml(options, database):
                   add_magnitude=add_magnitude,
                   add_fplane=add_fplane,
                   add_mt=add_mt, add_stamag=add_stamag,
-                  add_arrival=add_arrival)
+                  add_arrival=add_arrival,
+                  discriminator=options.discriminator)
 
     return ev, qml
 
@@ -285,6 +286,10 @@ if __name__ == '__main__':
     # Force only preferred origin
     parser.add_option("--prefor", action="store_true", dest="prefor",
                       default=False, help="Only fetch the preferred origin")
+
+    # Discriminator used to make sure our id-s are unique across multiple databases and hosts
+    parser.add_option("--discriminator", type=str , dest="discriminator",
+                      default=None, help="Use in order to ensure object id uniqueness across multiple databases and hosts")
 
     # Force only preferred origin
     parser.add_option("--orid", type=int, dest="orid",
