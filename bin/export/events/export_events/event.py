@@ -232,6 +232,8 @@ class Event():
         if self.prefor is True:
             orid = self.event_data['event.prefor']
             steps.extend([ 'dbsubset orid == %s' % orid ])
+        elif self.orid is not None:
+            steps.extend([ 'dbsubset orid == %s' % self.orid ])
 
         [ steps.extend( [ 'dbsubset auth =~ /%s/' % x ] ) for x in self.origin_auth_select if self.origin_auth_select]
         [ steps.extend( [ 'dbsubset auth !~ /%s/' % x ] ) for x in self.origin_auth_reject if self.origin_auth_reject]
