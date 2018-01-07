@@ -907,8 +907,9 @@ class css2qml():
             # Other elements just need to be unique.
             serial = str(serial).replace('/', '_').replace(' ', '_').lower()
 
-        # if discriminator is present then we rebuild the serial
-        serial = '/'.join([discriminator, serial])
+        if self.discriminator is not None:
+            # if discriminator is present then we rebuild the serial
+            serial = '/'.join([discriminator, serial])
 
         rid = '%s:%s.%s/%s/%s' % \
                 (self.uri_prefix, self.agency_id.lower(),
