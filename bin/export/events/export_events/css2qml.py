@@ -11,12 +11,12 @@ class css2qml():
 
     def __init__( self, event=None, evid=None, review_flags= ['r','y'], etype_map=None,
             uri_prefix='quakeml',agency_uri='local', agency_id='xx',
-            author='antelope.event2qml', 
+            author='antelope.event2qml',
             q='http://quakeml.org/xmlns/quakeml/1.2', catalog='http://anss.org/xmlns/catalog/0.1',
             bed='http://quakeml.org/xmlns/bed/1.2', bedrt='http://quakeml.org/xmlns/bed-rt/1.2',
             info_description='', info_comment='', add_origin=True,
             add_magnitude=True, add_fplane=True, add_mt=True, add_stamag=True,
-            add_arrival=True ):
+            add_arrival=True, discriminator=None ):
 
         self.logging = getLogger('css2qml')
 
@@ -33,6 +33,8 @@ class css2qml():
         self.placesdb = None
         self._prefmags = []
         self.detection_id_counter = 0
+
+        self.discriminator = discriminator
 
         if etype_map:
             self.etype_map = etype_map
@@ -863,14 +865,14 @@ class css2qml():
             uri += '/%s' % auth
         return uri
 
-    def _id( self, name, serial=None, alt_id=None ):
+    def _id( self, name, serial=None, alt_id=None, discriminator=None ):
         '''
         Create Resource identifiers for elemtns (public IDs)
         Using documentation on ANSS Quakeml ID Standards
         https://github.com/usgs/Quakeml/wiki/ANSS-Quakeml-ID-Standards
 
         Suggested format
-            quakeml:<network>.<domain>/<type>/<code>[/<extendedid>]
+            quakeml:<network>.<domain>/<type>/<discriminator>/<code>[/<extendedid>]
 
         Where for the ANSS these fields translate to:
 
@@ -889,6 +891,10 @@ class css2qml():
             <extendedid> is any additional information required to make this
                 id unique within <type> for this event, e.g. timestamp, magnitude type
 
+            <discriminator> is an additional information used to discriminate
+                between objects from different hosts and databases
+                e.g. atlasronet or atlas2017063
+
         '''
 
         try:
@@ -900,6 +906,9 @@ class css2qml():
         except:
             # Other elements just need to be unique.
             serial = str(serial).replace('/', '_').replace(' ', '_').lower()
+
+        # if discriminator is present then we rebuild the serial
+        serial = '/'.join([discriminator, serial])
 
         rid = '%s:%s.%s/%s/%s' % \
                 (self.uri_prefix, self.agency_id.lower(),
