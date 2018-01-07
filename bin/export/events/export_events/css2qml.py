@@ -911,9 +911,12 @@ class css2qml():
             # if discriminator is present then we rebuild the serial
             serial = '/'.join([self.discriminator, serial])
 
-        rid = '%s:%s.%s/%s/%s' % \
-                (self.uri_prefix, self.agency_id.lower(),
-                self.agency_uri, name, serial )
+        # rid = '%s:%s.%s/%s/%s' % \
+        #         (self.uri_prefix, self.agency_id.lower(),
+        #         self.agency_uri, name, serial )
+
+        rid = '%s:%s/%s/%s' % \
+                (self.uri_prefix, self.agency_uri, name, serial )
 
         if alt_id:
             rid += '/%s' % alt_id
