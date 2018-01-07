@@ -909,7 +909,7 @@ class css2qml():
 
         if self.discriminator is not None:
             # if discriminator is present then we rebuild the serial
-            serial = '/'.join([discriminator, serial])
+            serial = '/'.join([self.discriminator, serial])
 
         rid = '%s:%s.%s/%s/%s' % \
                 (self.uri_prefix, self.agency_id.lower(),
