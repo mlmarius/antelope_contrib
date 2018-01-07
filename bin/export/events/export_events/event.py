@@ -38,7 +38,7 @@ class Event():
                 mt_auth_select=None, mt_auth_reject=None,
                 fplane_auth_select=None, fplane_auth_reject=None,
                 detection_state_select=None, detection_state_reject=None
-                prefor=prefor, orid=orid):
+                prefor=None, orid=None):
 
         self.logging = getLogger('Event')
 
