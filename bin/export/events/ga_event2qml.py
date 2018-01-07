@@ -56,7 +56,7 @@ from optparse import OptionParser
 try:
     import antelope.stock as stock
     import antelope.datascope as datascope
-except exception, e:
+except Exception, e:
     sys.exit("Import Error: [%s] Do you have ANTELOPE installed?" % e)
 
 try:
@@ -145,14 +145,14 @@ def setup_event2qml(options, database):
     """
     Parameters
     ----------
-    options: OptionParser object 
-    
+    options: OptionParser object
+
     Returns
     -------
     ev: instance of Event class
     qml: instance of QualeMl class
-    logging: logging.getLogger object     
-    
+    logging: logging.getLogger object
+
     """
 
     log.info("database [%s]" % database)
@@ -235,7 +235,9 @@ def setup_event2qml(options, database):
                mt_auth_select=mt_auth_select,
                mt_auth_reject=mt_auth_reject,
                fplane_auth_select=fplane_auth_select,
-               fplane_auth_reject=fplane_auth_reject)
+               fplane_auth_reject=fplane_auth_reject,
+               prefor=options.prefor, orid=options.orid
+               )
     # This is the primary object for the conversion. Initialize and
     # configure for all events that we want to process.
     log.info('Init QuakeML object')
@@ -278,6 +280,15 @@ if __name__ == '__main__':
     # Vebose output
     parser.add_option("-v", action="store_true", dest="verbose",
                       default=False, help="run with verbose output")
+
+
+    # Force only preferred origin
+    parser.add_option("--prefor", action="store_true", dest="prefor",
+                      default=False, help="Only fetch the preferred origin")
+
+    # Force only preferred origin
+    parser.add_option("--orid", type=int, dest="orid",
+                      default=None, help="Only fetch this origin")
 
     # Debug output
     parser.add_option("-d", action="store_true", dest="debug",
